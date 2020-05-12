@@ -4,7 +4,7 @@
 
 1. Build elements and add styling
 2. Initalise grid with either a 2 or 4 block randomly placed and assign colour
-3. Reset function, tally and display score
+3. Reset function, inital score tally and best score saved and retrieved from local storage
 4. Create event listeners and functions for up, down, left and right swipes
 5. Merge 2 blocks if it's the same number
 6. Add up points on grid and display
