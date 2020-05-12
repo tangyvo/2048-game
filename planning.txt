@@ -1,0 +1,21 @@
+<!--
+2048 Game
+---------
+
+1. Build elements and add styling
+2. Initalise grid with either a 2 or 4 block randomly placed and assign colour
+3. Reset function, tally and display score
+4. Create event listeners and functions for up, down, left and right swipes
+5. Merge 2 blocks if it's the same number
+6. Add up points on grid and display
+7. Generate a random a 2 or 4 block in an empty slot
+8. Add animation
+9. Detect gameover state 
+10. Record high score in local storage, display and retrieve on page load
+11. Refactor 
+
+A1 A2 A3 A4
+B1 B2 B3 B4
+C1 C2 C3 C4
+D1 D2 D3 D4
+--!>
