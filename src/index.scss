@@ -106,7 +106,7 @@ header {
       font-size: 1.9rem;
     }
 
-    .btn-reset {
+    .btn {
       background-color: $orange;
       border-radius: $b-radius;
       margin-top: 10px;
@@ -124,6 +124,7 @@ header {
         border: 1px solid $orange;
       }
     }
+
   }
 }
 
@@ -175,7 +176,7 @@ main {
     color: white;
   }
 
-  .color-16 {
+  .colour-16 {
     background-color: $orange;
     color: white;
   }

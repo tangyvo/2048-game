@@ -12,7 +12,8 @@
 8. Add animation
 9. Detect gameover state 
 10. Record high score in local storage, display and retrieve on page load
-11. Refactor 
+11. Finishes touches - favicon, Read Me etc 
+12. Refactor Code
 
 A1 A2 A3 A4
 B1 B2 B3 B4

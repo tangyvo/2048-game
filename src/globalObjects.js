@@ -19,37 +19,37 @@ export const blockIds = [
 
 export const colour = (block) => {
   switch (block) {
-    case 2:
+    case '2':
       return "colour-2";
       break;
-    case 4:
+    case '4':
       return "colour-4";
       break;
-    case 8:
+    case '8':
       return "colour-8";
       break;
-    case 16:
+    case '16':
       return "colour-16";
       break;
-    case 32:
+    case '32':
       return "colour-32";
       break;
-    case 64:
+    case '64':
       return "colour-64";
       break;
-    case 128:
+    case '128':
       return "colour-128";
       break;
-    case 256:
+    case '256':
       return "colour-256";
       break;
-    case 516:
+    case '516':
       return "colour-516";
       break;
-    case 1024:
+    case '1024':
       return "colour-1024";
       break;
-    case 2048:
+    case '2048':
       return "colour-2048";
       break;
     default:

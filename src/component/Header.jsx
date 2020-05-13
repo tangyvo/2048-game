@@ -1,6 +1,6 @@
 import React from "react";
 
-const Header = ({ score, bestScore, init }) => {
+const Header = ({ score, bestScore, init, playing }) => {
   return (
     <React.Fragment>
       <header>
@@ -16,8 +16,8 @@ const Header = ({ score, bestScore, init }) => {
             <p>Best</p>
             <p>{bestScore}</p>
           </div>
-          <button className="btn-reset" onClick={init}>
-            Reset
+          <button className="btn btn-reset" onClick={init}>
+            {playing ? 'Reset' : 'Start'}
           </button>
         </div>
       </header>

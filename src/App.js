@@ -4,27 +4,32 @@ import Header from "./component/Header";
 
 function App() {
   const [grid, setGrid] = useState([
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
+    [32, 0, 0, 0],
+    [8, 0, 0, 0],
+    [16, 0, 0, 0],
+    [128, 0, 0, 0],
   ]);
-  const [choosenBlock, setChoosenBlock] = useState();
-  const [newBlock, setNewBlock] = useState();
-  const [score, setScore] = useState();
-  const [bestScore, setBestScore] = useState();
-  const LOCALSTORAGE_KEY = '2048-best-score';
+  const [newBlock, setNewBlock] = useState(0);
+  const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
+  const LOCALSTORAGE_KEY = "2048-best-score";
+  const [playing, setPlaying] = useState(false);
+  const [resetToggle, setResetToggle] = useState(true);
 
   useEffect(() => {
-    twoFourBlock();
-    assignBlock();
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
-  }, []);
-
-  useEffect(() => {
+    twoFourBlock();
+    let id = randBlock();
+    const col = id.split("-")[0];
+    const row = id.split("-")[1];
+    const gridCopy = [...grid];
+    gridCopy[row][col] = newBlock;
+    setGrid(gridCopy);
     setScore(newBlock);
-  }, [newBlock])
+  }, [resetToggle]);
 
+
+  // clicking RESET
   const init = () => {
     setGrid([
       [0, 0, 0, 0],
@@ -32,11 +37,12 @@ function App() {
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ]);
-    twoFourBlock();
-    assignBlock();
-    setScore(newBlock);
-    if (score > bestScore) { localStorage.setItem(LOCALSTORAGE_KEY, score); 
-    setBestScore(score)};
+    if (score > bestScore) {
+      localStorage.setItem(LOCALSTORAGE_KEY, score);
+      setBestScore(score);
+    }
+    setResetToggle((prev) => (prev === true ? false : true));
+    setPlaying(true);
   };
 
   // return either a 2 or 4
@@ -52,43 +58,24 @@ function App() {
     return blockIds[randIndex];
   };
 
-  // assign a  block
-  const assignBlock = () => {
-    let id = randBlock();
-    const col = id.split("-")[0];
-    const row = id.split("-")[1];
-    setChoosenBlock(id);
-    console.log("assignBlock");
-    setGrid((prev) => (prev[row][col] = newBlock));
-  };
+  // shift LEFT eventlistener
+  
 
-  const updateScore = () => {
-    console.log(grid);
-    let total = 0;
-    total = grid[0].reduce((prev, cur) => prev + cur, total);
-    console.log(grid[0], total);
-    total = grid[1].reduce((prev, cur) => prev + cur, total);
-    console.log(grid[1], total);
-    total = grid[2].reduce((prev, cur) => prev + cur, total);
-    console.log(grid[2], total);
-    total = grid[3].reduce((prev, cur) => prev + cur, total);
-    setScore(total);
-    console.log(grid[3], total);
-  };
 
   return (
     <div className="app">
-      <Header score={score} bestScore={bestScore} init={init} />
+      {console.log(grid)}
+      <Header score={score} bestScore={bestScore} init={init} playing={playing}/>
 
       <main className="grid">
-        {blockIds.map((block) => (
-          <div
-            className={block === choosenBlock ? colour(newBlock) : null}
-            key={block}
-          >
-            {block === choosenBlock ? newBlock : ""}
-          </div>
-        ))}
+        {grid
+          .join(",")
+          .split(",")
+          .map((block) => (
+            <div className={colour(block)} key={Math.random()}>
+              {block === "0" ? "" : block}
+            </div>
+          ))}
       </main>
     </div>
   );
