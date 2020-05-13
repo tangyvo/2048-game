@@ -43,8 +43,8 @@ export const colour = (block) => {
     case '256':
       return "colour-256";
       break;
-    case '516':
-      return "colour-516";
+    case '512':
+      return "colour-512";
       break;
     case '1024':
       return "colour-1024";

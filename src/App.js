@@ -4,10 +4,10 @@ import Header from "./component/Header";
 
 function App() {
   const [grid, setGrid] = useState([
-    [0, 0, 4, 0],
-    [256, 0, 0, 64],
-    [0, 8, 0, 0],
-    [8, 2, 0, 32],
+    [256, 0, 4, 64],
+    [256, 16, 4, 64],
+    [8, 4, 2, 32],
+    [8, 4, 2, 32],
   ]);
   const [newBlock, setNewBlock] = useState(0);
   const [score, setScore] = useState(0);
@@ -63,6 +63,7 @@ function App() {
     for (let col = 0; col < 4; col++) {
       let column = [gridCopy[0][col], gridCopy[1][col], gridCopy[2][col], gridCopy[3][col]];
       numsOnly = column.filter((num) => num > 0);
+      numsOnly = checkMerge(numsOnly);
       gridCopy[0][col] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
       gridCopy[1][col] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
       gridCopy[2][col] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
@@ -83,6 +84,7 @@ function App() {
       ];
       numsOnly = column.filter((num) => num > 0);
       numsOnly = numsOnly.reverse();
+      numsOnly = checkMerge(numsOnly);
       gridCopy[3][col] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
       gridCopy[2][col] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
       gridCopy[1][col] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
@@ -95,14 +97,9 @@ function App() {
     let numsOnly;
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
-      let column = [
-        gridCopy[row][0],
-        gridCopy[row][1],
-        gridCopy[row][2],
-        gridCopy[row][3],
-      ];
-      numsOnly = column.filter((num) => num > 0);
+      numsOnly = gridCopy[row].filter((num) => num > 0);
       numsOnly = numsOnly.reverse();
+      numsOnly = checkMerge(numsOnly);
       gridCopy[row][3] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
       gridCopy[row][2] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
       gridCopy[row][1] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
@@ -115,14 +112,8 @@ function App() {
     let numsOnly;
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
-      let column = [
-        gridCopy[row][0],
-        gridCopy[row][1],
-        gridCopy[row][2],
-        gridCopy[row][3],
-      ];
-      numsOnly = column.filter((num) => num > 0);
-      numsOnly = numsOnly;
+      numsOnly = gridCopy[row].filter((num) => num > 0);
+      numsOnly = checkMerge(numsOnly);
       gridCopy[row][0] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
       gridCopy[row][1] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
       gridCopy[row][2] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
@@ -142,6 +133,17 @@ function App() {
       shiftRight();
     }
   };
+
+  const checkMerge = (array) => {
+    let newArray = [...array];
+    for (let i=0; i<array.length; i++) {
+      if (array[i] === array[i+1]) {
+        newArray[i] = array[i] * 2;
+        newArray.splice(i+1, 1);
+      } 
+    }
+    return newArray;
+  }
 
   useEffect(() => {
     window.addEventListener("keydown", swipe);
