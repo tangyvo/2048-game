@@ -4,10 +4,10 @@ import Header from "./component/Header";
 
 function App() {
   const [grid, setGrid] = useState([
-    [256, 0, 4, 64],
-    [256, 16, 4, 64],
-    [8, 4, 2, 32],
-    [8, 4, 2, 32],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
   ]);
   const [newBlock, setNewBlock] = useState(0);
   const [score, setScore] = useState(0);
@@ -19,11 +19,16 @@ function App() {
   useEffect(() => {
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
     twoFourBlock();
-    let id = randBlock();
-    const col = id.split("-")[0];
-    const row = id.split("-")[1];
     const gridCopy = [...grid];
-    gridCopy[row][col] = newBlock;
+    let empty = false;
+    while (!empty) {
+      const row = Math.floor(Math.random() * 4);
+      const col = Math.floor(Math.random() * 4);
+      if (gridCopy[row][col] === 0) {
+        gridCopy[row][col] = newBlock;
+        empty = true;
+      } 
+    }
     setGrid(gridCopy);
     setScore(newBlock);
   }, [resetToggle]);
@@ -51,17 +56,16 @@ function App() {
     setNewBlock(num[randIndex]);
   };
 
-  // return random block
-  const randBlock = () => {
-    const randIndex = Math.floor(Math.random() * 16);
-    return blockIds[randIndex];
-  };
-
   const shiftUp = () => {
     let numsOnly;
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
-      let column = [gridCopy[0][col], gridCopy[1][col], gridCopy[2][col], gridCopy[3][col]];
+      let column = [
+        gridCopy[0][col],
+        gridCopy[1][col],
+        gridCopy[2][col],
+        gridCopy[3][col],
+      ];
       numsOnly = column.filter((num) => num > 0);
       numsOnly = checkMerge(numsOnly);
       gridCopy[0][col] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
@@ -136,14 +140,14 @@ function App() {
 
   const checkMerge = (array) => {
     let newArray = [...array];
-    for (let i=0; i<array.length; i++) {
-      if (array[i] === array[i+1]) {
+    for (let i = 0; i < array.length-1; i++) {
+      if (newArray[i] === newArray[i + 1]) {
         newArray[i] = array[i] * 2;
-        newArray.splice(i+1, 1);
-      } 
+        newArray[i+1] = 0;
+      }
     }
-    return newArray;
-  }
+    return newArray.filter(el => el !== 0);
+  };
 
   useEffect(() => {
     window.addEventListener("keydown", swipe);
@@ -157,7 +161,6 @@ function App() {
 
   return (
     <div className="app">
-      {console.log(grid)}
       <Header
         score={score}
         bestScore={bestScore}

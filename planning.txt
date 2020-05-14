@@ -7,16 +7,9 @@
 3. Reset function, inital score tally and best score saved and retrieved from local storage
 4. Create event listeners and functions for up, down, left and right swipes
 5. Merge 2 blocks if it's the same number
-6. Add up points on grid and display
-7. Generate a random a 2 or 4 block in an empty slot
-8. Add animation
-9. Detect gameover state 
-10. Record high score in local storage, display and retrieve on page load
-11. Finishes touches - favicon, Read Me etc 
-12. Refactor Code
-
-A1 A2 A3 A4
-B1 B2 B3 B4
-C1 C2 C3 C4
-D1 D2 D3 D4
+6. Generate a random a 2 or 4 block in an empty slot
+7. Add up points on grid and display
+8. Detect gameover state 
+9. Finishing touches, animation, favicon etc 
+10. Refactor Code and comment out code
 --!>
