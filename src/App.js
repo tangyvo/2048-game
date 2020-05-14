@@ -20,15 +20,9 @@ function App() {
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
     twoFourBlock();
     const gridCopy = [...grid];
-    let empty = false;
-    while (!empty) {
-      const row = Math.floor(Math.random() * 4);
-      const col = Math.floor(Math.random() * 4);
-      if (gridCopy[row][col] === 0) {
-        gridCopy[row][col] = newBlock;
-        empty = true;
-      } 
-    }
+    const row = Math.floor(Math.random() * 4);
+    const col = Math.floor(Math.random() * 4);
+    gridCopy[row][col] = newBlock;
     setGrid(gridCopy);
     setScore(newBlock);
   }, [resetToggle]);
@@ -54,6 +48,14 @@ function App() {
     const num = [2, 4];
     const randIndex = Math.round(Math.random());
     setNewBlock(num[randIndex]);
+  };
+
+  const calcTotal = () => {
+    let total = 0;
+    grid.map((row) => {
+      total += row.reduce((prev, cur) => prev + Number(cur), 0);
+    });
+    setScore(total);
   };
 
   const shiftUp = () => {
@@ -127,6 +129,13 @@ function App() {
   };
 
   const swipe = (e) => {
+    if (
+      e.key !== "ArrowUp" &&
+      e.key !== "ArrowDown" &&
+      e.key !== "ArrowLeft" &&
+      e.key !== "ArrowRight"
+    ) return;
+
     if (e.key === "ArrowUp") {
       shiftUp();
     } else if (e.key === "ArrowDown") {
@@ -136,17 +145,46 @@ function App() {
     } else if (e.key === "ArrowRight") {
       shiftRight();
     }
+    generateNewBlock();
+    calcTotal();
+    checkGameOver();
+  };
+
+  const checkGameOver = () => {
+    let empty = 0;
+    for (let row of grid) {
+      empty += row.filter(col => col === 0).length;
+    }
+
+    if (empty === 0) {
+      console.log('Game Over')
+    }
+  }
+
+  const generateNewBlock = () => {
+    twoFourBlock();
+    const gridCopy = [...grid];
+    let empty = false;
+    while (!empty) {
+      const row = Math.floor(Math.random() * 4);
+      const col = Math.floor(Math.random() * 4);
+      if (gridCopy[row][col] === 0) {
+        gridCopy[row][col] = newBlock;
+        empty = true;
+      }
+    }
+    setGrid(gridCopy);
   };
 
   const checkMerge = (array) => {
     let newArray = [...array];
-    for (let i = 0; i < array.length-1; i++) {
+    for (let i = 0; i < array.length - 1; i++) {
       if (newArray[i] === newArray[i + 1]) {
         newArray[i] = array[i] * 2;
-        newArray[i+1] = 0;
+        newArray[i + 1] = 0;
       }
     }
-    return newArray.filter(el => el !== 0);
+    return newArray.filter((el) => el !== 0);
   };
 
   useEffect(() => {
@@ -156,8 +194,6 @@ function App() {
       window.removeEventListener("keydown", swipe);
     };
   });
-
-  // eventlisteners for up, down, left and right arrow keys
 
   return (
     <div className="app">
