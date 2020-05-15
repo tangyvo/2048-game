@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { blockIds, colour } from "./globalObjects";
+import { colour } from "./globalObjects";
+import GameOver from "./component/Gameover";
 import Header from "./component/Header";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const LOCALSTORAGE_KEY = "2048-best-score";
   const [playing, setPlaying] = useState(false);
   const [resetToggle, setResetToggle] = useState(true);
+  const [gameover, setGameover] = useState(false);
 
   useEffect(() => {
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
@@ -41,6 +43,7 @@ function App() {
     }
     setResetToggle((prev) => (prev === true ? false : true));
     setPlaying(true);
+    setGameover(false);
   };
 
   // return either a 2 or 4
@@ -134,7 +137,8 @@ function App() {
       e.key !== "ArrowDown" &&
       e.key !== "ArrowLeft" &&
       e.key !== "ArrowRight"
-    ) return;
+    )
+      return;
 
     if (e.key === "ArrowUp") {
       shiftUp();
@@ -153,13 +157,37 @@ function App() {
   const checkGameOver = () => {
     let empty = 0;
     for (let row of grid) {
-      empty += row.filter(col => col === 0).length;
+      empty += row.filter((col) => col === 0).length;
     }
 
     if (empty === 0) {
-      console.log('Game Over')
+      let noMatch = true;
+      for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 4; col++) {
+          if (row === 3) {
+            if (grid[row][col] === grid[row][col + 1]) {
+              noMatch = false;
+            }
+          }
+          else if (col === 3) {
+            if (grid[row][col] === grid[row + 1][col]) {
+              noMatch = false;
+            }
+          } else if (
+            grid[row][col] === grid[row][col + 1] ||
+            grid[row][col] === grid[row + 1][col]
+          ) {
+            noMatch = false;
+          }
+        }
+      }
+
+      if (noMatch) {
+        setGameover(true);
+        console.log(noMatch, "Game Over");
+      }
     }
-  }
+  };
 
   const generateNewBlock = () => {
     twoFourBlock();
@@ -203,7 +231,7 @@ function App() {
         init={init}
         playing={playing}
       />
-
+      <GameOver className="gameover" gameover={gameover} />
       <main className="grid">
         {grid
           .join(",")

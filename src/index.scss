@@ -124,7 +124,6 @@ header {
         border: 1px solid $orange;
       }
     }
-
   }
 }
 
@@ -142,6 +141,7 @@ main {
 }
 
 .grid {
+  position: relative;
   border-radius: $b-radius;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -208,4 +208,27 @@ main {
     color: white;
     font-size: 2rem;
   }
+}
+
+.gameover {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  z-index: 1;
+  height: calc(90px * 4 + 50px);
+  width: calc(90px * 4 + 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+
+  p {
+    font-size: 2rem;
+  }
+}
+
+.show {
+  opacity: 1;
+  transition: 0.5s ease;
 }
