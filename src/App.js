@@ -4,32 +4,43 @@ import GameOver from "./component/Gameover";
 import Header from "./component/Header";
 
 function App() {
+  const LOCALSTORAGE_KEY = "2048-best-score";
+  const [bestScore, setBestScore] = useState(0);
+  const [score, setScore] = useState(0);
+  const [newBlock, setNewBlock] = useState(0);
+  const [gameover, setGameover] = useState(false);
+  const [blockToggle, setBlockToggle] = useState(false);
   const [grid, setGrid] = useState([
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
   ]);
-  const [newBlock, setNewBlock] = useState(0);
-  const [score, setScore] = useState(0);
-  const [bestScore, setBestScore] = useState(0);
-  const LOCALSTORAGE_KEY = "2048-best-score";
-  const [playing, setPlaying] = useState(false);
-  const [resetToggle, setResetToggle] = useState(true);
-  const [gameover, setGameover] = useState(false);
 
+  // get best score on page load
   useEffect(() => {
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
     twoFourBlock();
-    const gridCopy = [...grid];
-    const row = Math.floor(Math.random() * 4);
-    const col = Math.floor(Math.random() * 4);
-    gridCopy[row][col] = newBlock;
-    setGrid(gridCopy);
-    setScore(newBlock);
-  }, [resetToggle]);
+  }, []);
 
-  // clicking RESET
+  useEffect(() => {
+    const gridCopy = [...grid];
+    const emptyBlocks = gridCopy.filter((block) => block === 0).length;
+    if (emptyBlocks === 0 && blockToggle) return;
+    let empty = false;
+    while (!empty) {
+      let row = Math.floor(Math.random() * 4);
+      let col = Math.floor(Math.random() * 4);
+      if (gridCopy[row][col] === 0) {
+        gridCopy[row][col] = newBlock;
+        empty = true;
+        calcTotal();
+      }
+    }
+    setGrid(gridCopy);
+  }, [blockToggle]);
+
+  // resetting game and grid
   const init = () => {
     setGrid([
       [0, 0, 0, 0],
@@ -37,13 +48,17 @@ function App() {
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ]);
+    twoFourBlock();
+    setScore(newBlock);
+    setGameover(false);
+  };
+
+  // check & save best score
+  const saveBestScore = () => {
     if (score > bestScore) {
       localStorage.setItem(LOCALSTORAGE_KEY, score);
       setBestScore(score);
     }
-    setResetToggle((prev) => (prev === true ? false : true));
-    setPlaying(true);
-    setGameover(false);
   };
 
   // return either a 2 or 4
@@ -51,82 +66,64 @@ function App() {
     const num = [2, 4];
     const randIndex = Math.round(Math.random());
     setNewBlock(num[randIndex]);
+    setBlockToggle((prev) => (prev === true ? false : true));
   };
 
+  // count points on grid
   const calcTotal = () => {
     let total = 0;
-    grid.map((row) => {
-      total += row.reduce((prev, cur) => prev + Number(cur), 0);
-    });
+    grid.map(
+      (row) => (total += row.reduce((prev, cur) => prev + Number(cur), 0))
+    );
     setScore(total);
   };
 
   const shiftUp = () => {
-    let numsOnly;
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
-      let column = [
-        gridCopy[0][col],
-        gridCopy[1][col],
-        gridCopy[2][col],
-        gridCopy[3][col],
-      ];
-      numsOnly = column.filter((num) => num > 0);
-      numsOnly = checkMerge(numsOnly);
-      gridCopy[0][col] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
-      gridCopy[1][col] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
-      gridCopy[2][col] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
-      gridCopy[3][col] = numsOnly[3] !== undefined ? numsOnly[3] : 0;
+      let column = [0, 1, 2, 3].map((num) => gridCopy[num][col]);
+      let tile = column.filter((num) => num > 0);
+      tile = checkMerge(tile);
+      for (let i = 0; i < 4; i++) {
+        gridCopy[i][col] = tile[i] !== undefined ? tile[i] : 0;
+      }
     }
     setGrid(gridCopy);
   };
 
   const shiftDown = () => {
-    let numsOnly;
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
-      let column = [
-        gridCopy[0][col],
-        gridCopy[1][col],
-        gridCopy[2][col],
-        gridCopy[3][col],
-      ];
-      numsOnly = column.filter((num) => num > 0);
-      numsOnly = numsOnly.reverse();
-      numsOnly = checkMerge(numsOnly);
-      gridCopy[3][col] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
-      gridCopy[2][col] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
-      gridCopy[1][col] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
-      gridCopy[0][col] = numsOnly[3] !== undefined ? numsOnly[3] : 0;
+      let column = [3, 2, 1, 0].map((num) => gridCopy[num][col]);
+      let tile = column.filter((num) => num > 0);
+      tile = checkMerge(tile);
+      for (let i = 0; i < 4; i++) {
+        gridCopy[i][col] = tile[3 - i] !== undefined ? tile[3 - i] : 0;
+      }
     }
     setGrid(gridCopy);
   };
 
   const shiftRight = () => {
-    let numsOnly;
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
-      numsOnly = gridCopy[row].filter((num) => num > 0);
-      numsOnly = numsOnly.reverse();
-      numsOnly = checkMerge(numsOnly);
-      gridCopy[row][3] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
-      gridCopy[row][2] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
-      gridCopy[row][1] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
-      gridCopy[row][0] = numsOnly[3] !== undefined ? numsOnly[3] : 0;
+      let tile = gridCopy[row].filter((num) => num > 0);
+      tile = checkMerge(tile).reverse();
+      for (let i = 0; i < 4; i++) {
+        gridCopy[row][i] = tile[3 - i] !== undefined ? tile[3 - i] : 0;
+      }
     }
     setGrid(gridCopy);
   };
 
   const shiftLeft = () => {
-    let numsOnly;
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
-      numsOnly = gridCopy[row].filter((num) => num > 0);
-      numsOnly = checkMerge(numsOnly);
-      gridCopy[row][0] = numsOnly[0] !== undefined ? numsOnly[0] : 0;
-      gridCopy[row][1] = numsOnly[1] !== undefined ? numsOnly[1] : 0;
-      gridCopy[row][2] = numsOnly[2] !== undefined ? numsOnly[2] : 0;
-      gridCopy[row][3] = numsOnly[3] !== undefined ? numsOnly[3] : 0;
+      let tile = gridCopy[row].filter((num) => num > 0);
+      tile = checkMerge(tile);
+      for (let i = 0; i < 4; i++) {
+        gridCopy[row][i] = tile[i] !== undefined ? tile[i] : 0;
+      }
     }
     setGrid(gridCopy);
   };
@@ -149,7 +146,8 @@ function App() {
     } else if (e.key === "ArrowRight") {
       shiftRight();
     }
-    generateNewBlock();
+
+    twoFourBlock();
     calcTotal();
     checkGameOver();
   };
@@ -167,16 +165,18 @@ function App() {
           if (row === 3) {
             if (grid[row][col] === grid[row][col + 1]) {
               noMatch = false;
+              console.log(grid[row][col], grid[row][col + 1]);
             }
-          }
-          else if (col === 3) {
+          } else if (col === 3) {
             if (grid[row][col] === grid[row + 1][col]) {
               noMatch = false;
+              console.log(grid[row][col], grid[row + 1][col]);
             }
           } else if (
             grid[row][col] === grid[row][col + 1] ||
             grid[row][col] === grid[row + 1][col]
           ) {
+            console.log(grid[row][col], grid[row + 1][col], grid[row][col + 1]);
             noMatch = false;
           }
         }
@@ -184,24 +184,9 @@ function App() {
 
       if (noMatch) {
         setGameover(true);
-        console.log(noMatch, "Game Over");
+        saveBestScore();
       }
     }
-  };
-
-  const generateNewBlock = () => {
-    twoFourBlock();
-    const gridCopy = [...grid];
-    let empty = false;
-    while (!empty) {
-      const row = Math.floor(Math.random() * 4);
-      const col = Math.floor(Math.random() * 4);
-      if (gridCopy[row][col] === 0) {
-        gridCopy[row][col] = newBlock;
-        empty = true;
-      }
-    }
-    setGrid(gridCopy);
   };
 
   const checkMerge = (array) => {
@@ -209,10 +194,10 @@ function App() {
     for (let i = 0; i < array.length - 1; i++) {
       if (newArray[i] === newArray[i + 1]) {
         newArray[i] = array[i] * 2;
-        newArray[i + 1] = 0;
+        newArray.splice(i + 1, 1);
       }
     }
-    return newArray.filter((el) => el !== 0);
+    return newArray;
   };
 
   useEffect(() => {
@@ -225,13 +210,8 @@ function App() {
 
   return (
     <div className="app">
-      <Header
-        score={score}
-        bestScore={bestScore}
-        init={init}
-        playing={playing}
-      />
-      <GameOver className="gameover" gameover={gameover} />
+      <Header score={score} bestScore={bestScore} init={init} />
+      <GameOver className="gameover" gameover={gameover} score={score} />
       <main className="grid">
         {grid
           .join(",")
