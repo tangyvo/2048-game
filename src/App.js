@@ -7,9 +7,9 @@ function App() {
   const LOCALSTORAGE_KEY = "2048-best-score";
   const [bestScore, setBestScore] = useState(0);
   const [score, setScore] = useState(0);
-  const [newBlock, setNewBlock] = useState(0);
+  const [newTile, setNewtile] = useState(0);
   const [gameover, setGameover] = useState(false);
-  const [blockToggle, setBlockToggle] = useState(false);
+  const [tileToggle, settileToggle] = useState(false);
   const [grid, setGrid] = useState([
     [0, 0, 0, 0],
     [0, 0, 0, 0],
@@ -20,25 +20,25 @@ function App() {
   // get best score on page load
   useEffect(() => {
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
-    twoFourBlock();
+    randtile();
   }, []);
 
   useEffect(() => {
     const gridCopy = [...grid];
-    const emptyBlocks = gridCopy.filter((block) => block === 0).length;
-    if (emptyBlocks === 0 && blockToggle) return;
     let empty = false;
+
     while (!empty) {
+      console.log('loop');
       let row = Math.floor(Math.random() * 4);
       let col = Math.floor(Math.random() * 4);
       if (gridCopy[row][col] === 0) {
-        gridCopy[row][col] = newBlock;
+        gridCopy[row][col] = newTile;
         empty = true;
         calcTotal();
       }
     }
     setGrid(gridCopy);
-  }, [blockToggle]);
+  }, [tileToggle]);
 
   // resetting game and grid
   const init = () => {
@@ -48,8 +48,8 @@ function App() {
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ]);
-    twoFourBlock();
-    setScore(newBlock);
+    randtile();
+    setScore(newTile);
     setGameover(false);
   };
 
@@ -62,11 +62,11 @@ function App() {
   };
 
   // return either a 2 or 4
-  const twoFourBlock = () => {
+  const randtile = () => {
+    settileToggle((prev) => (prev === true ? false : true));
     const num = [2, 4];
     const randIndex = Math.round(Math.random());
-    setNewBlock(num[randIndex]);
-    setBlockToggle((prev) => (prev === true ? false : true));
+    setNewtile(num[randIndex]);
   };
 
   // count points on grid
@@ -129,14 +129,6 @@ function App() {
   };
 
   const swipe = (e) => {
-    if (
-      e.key !== "ArrowUp" &&
-      e.key !== "ArrowDown" &&
-      e.key !== "ArrowLeft" &&
-      e.key !== "ArrowRight"
-    )
-      return;
-
     if (e.key === "ArrowUp") {
       shiftUp();
     } else if (e.key === "ArrowDown") {
@@ -145,50 +137,58 @@ function App() {
       shiftLeft();
     } else if (e.key === "ArrowRight") {
       shiftRight();
+    } else {
+      return;
     }
 
-    twoFourBlock();
-    calcTotal();
     checkGameOver();
+    randtile();
+    calcTotal();
   };
 
   const checkGameOver = () => {
     let empty = 0;
     for (let row of grid) {
-      empty += row.filter((col) => col === 0).length;
+      empty += row.filter((col) => col !== 0).length;
+      console.log(empty)
     }
 
-    if (empty === 0) {
-      let noMatch = true;
-      for (let row = 0; row < 4; row++) {
-        for (let col = 0; col < 4; col++) {
-          if (row === 3) {
-            if (grid[row][col] === grid[row][col + 1]) {
-              noMatch = false;
-              console.log(grid[row][col], grid[row][col + 1]);
-            }
-          } else if (col === 3) {
-            if (grid[row][col] === grid[row + 1][col]) {
-              noMatch = false;
-              console.log(grid[row][col], grid[row + 1][col]);
-            }
-          } else if (
-            grid[row][col] === grid[row][col + 1] ||
-            grid[row][col] === grid[row + 1][col]
-          ) {
-            console.log(grid[row][col], grid[row + 1][col], grid[row][col + 1]);
-            noMatch = false;
-          }
+    if (empty === 15) return;
+
+
+    let noMatch = true;
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        // if (
+        //   grid[row][col + 1] === undefined ||
+        //   grid[row + 1][col] === undefined
+        // ) {
+        //   console.log('ex')
+        //   return;
+        // }
+
+        if (
+          grid[row][col] === grid[row][col + 1] ||
+          grid[row][col] === grid[row + 1][col]
+        ) {
+          console.log(
+            grid[row][col],
+            grid[row + 1][col + 1],
+            grid[row][col + 1]
+          );
+          noMatch = false;
         }
       }
+    }
 
-      if (noMatch) {
-        setGameover(true);
-        saveBestScore();
-      }
+    if (noMatch) {
+      setGameover(true);
+      console.log(gameover);
+      saveBestScore();
     }
   };
 
+  // merge 2 tiles of the same number
   const checkMerge = (array) => {
     let newArray = [...array];
     for (let i = 0; i < array.length - 1; i++) {
@@ -202,7 +202,6 @@ function App() {
 
   useEffect(() => {
     window.addEventListener("keydown", swipe);
-
     return () => {
       window.removeEventListener("keydown", swipe);
     };
@@ -210,15 +209,16 @@ function App() {
 
   return (
     <div className="app">
+      {/* {console.log('return:')} */}
       <Header score={score} bestScore={bestScore} init={init} />
       <GameOver className="gameover" gameover={gameover} score={score} />
       <main className="grid">
         {grid
           .join(",")
           .split(",")
-          .map((block) => (
-            <div className={colour(block)} key={Math.random()}>
-              {block === "0" ? "" : block}
+          .map((tile) => (
+            <div className={colour(tile)} key={Math.random()}>
+              {tile === "0" ? "" : tile}
             </div>
           ))}
       </main>

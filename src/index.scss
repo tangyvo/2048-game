@@ -159,12 +159,26 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+  }
+
+  .newBlock {
+    transform: scale();
+    animation: tileAnimation 0.25s ease-out forwards;
+  }
+
+  @keyframes tileAnimation {
+    0% {
+      transform: scale(0);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   .colour-2 {
     background-color: $lightest-gray;
     color: $dark-gray;
-    transition: 1s ease;
   }
 
   .colour-4 {

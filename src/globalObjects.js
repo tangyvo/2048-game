@@ -20,7 +20,7 @@ export const blockIds = [
 export const colour = (block) => {
   switch (block) {
     case '2':
-      return "colour-2";
+      return "colour-2 tile";
       break;
     case '4':
       return "colour-4";
