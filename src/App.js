@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { colour } from "./globalObjects";
 import GameOver from "./component/Gameover";
 import Header from "./component/Header";
+import Grid from "./component/Grid";
 
 function App() {
   const LOCALSTORAGE_KEY = "2048-best-score";
@@ -20,21 +20,25 @@ function App() {
   // get best score on page load
   useEffect(() => {
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
-    randtile();
+    randTile();
   }, []);
 
   useEffect(() => {
     const gridCopy = [...grid];
     let empty = false;
-
+    let count = 0;
     while (!empty) {
-      console.log('loop');
+      count += 1;
+      console.log("loop", count);
       let row = Math.floor(Math.random() * 4);
       let col = Math.floor(Math.random() * 4);
       if (gridCopy[row][col] === 0) {
         gridCopy[row][col] = newTile;
+        console.log(newTile);
         empty = true;
         calcTotal();
+      } else if (count > 50) {
+        empty = true;
       }
     }
     setGrid(gridCopy);
@@ -48,7 +52,7 @@ function App() {
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ]);
-    randtile();
+    randTile();
     setScore(newTile);
     setGameover(false);
   };
@@ -62,7 +66,7 @@ function App() {
   };
 
   // return either a 2 or 4
-  const randtile = () => {
+  const randTile = () => {
     settileToggle((prev) => (prev === true ? false : true));
     const num = [2, 4];
     const randIndex = Math.round(Math.random());
@@ -140,11 +144,14 @@ function App() {
     } else {
       return;
     }
-
-    checkGameOver();
-    randtile();
+    randTile();
     calcTotal();
   };
+
+  // check if game is over every time grid updates
+  useEffect(() => {
+    checkGameOver();
+  }, [grid]);
 
   const checkGameOver = () => {
     let empty = 0;
@@ -152,24 +159,30 @@ function App() {
       empty += row.filter((col) => col !== 0).length;
     }
 
-    if (empty !== 15) return;
-
+    if (empty !== 16) return;
 
     let noMatch = true;
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        if (grid[row][col] === grid[row][col + 1]) {
-          noMatch = false;
-        } else if (grid[row][col] === grid[row + 1][col]) {
+    for (let row = 0; row <= 3; row++) {
+      for (let col = 0; col <= 3; col++) {
+        if (row === 3) {
+          if (grid[row][col] === grid[row][col + 1]) {
+            noMatch = false;
+          }
+        } else if (col === 3) {
+          if (grid[row][col] === grid[row + 1][col]) {
+            noMatch = false;
+          }
+        } else if (
+          grid[row][col] === grid[row + 1][col] ||
+          grid[row][col] === grid[row][col + 1]
+        ) {
           noMatch = false;
         }
       }
     }
-    console.log('does this execute')
 
     if (noMatch) {
       setGameover(true);
-      console.log(gameover);
       saveBestScore();
     }
   };
@@ -199,16 +212,7 @@ function App() {
     <div className="app">
       <Header score={score} bestScore={bestScore} init={init} />
       <GameOver className="gameover" gameover={gameover} score={score} />
-      <main className="grid">
-        {grid
-          .join(",")
-          .split(",")
-          .map((tile) => (
-            <div className={colour(tile)} key={Math.random()}>
-              {tile === "0" ? "" : tile}
-            </div>
-          ))}
-      </main>
+      <Grid grid={grid} />
     </div>
   );
 }
