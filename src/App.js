@@ -150,36 +150,22 @@ function App() {
     let empty = 0;
     for (let row of grid) {
       empty += row.filter((col) => col !== 0).length;
-      console.log(empty)
     }
 
-    if (empty === 15) return;
+    if (empty !== 15) return;
 
 
     let noMatch = true;
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        // if (
-        //   grid[row][col + 1] === undefined ||
-        //   grid[row + 1][col] === undefined
-        // ) {
-        //   console.log('ex')
-        //   return;
-        // }
-
-        if (
-          grid[row][col] === grid[row][col + 1] ||
-          grid[row][col] === grid[row + 1][col]
-        ) {
-          console.log(
-            grid[row][col],
-            grid[row + 1][col + 1],
-            grid[row][col + 1]
-          );
+        if (grid[row][col] === grid[row][col + 1]) {
+          noMatch = false;
+        } else if (grid[row][col] === grid[row + 1][col]) {
           noMatch = false;
         }
       }
     }
+    console.log('does this execute')
 
     if (noMatch) {
       setGameover(true);
@@ -201,15 +187,16 @@ function App() {
   };
 
   useEffect(() => {
-    window.addEventListener("keydown", swipe);
-    return () => {
-      window.removeEventListener("keydown", swipe);
-    };
+    if (!gameover) {
+      window.addEventListener("keydown", swipe);
+      return () => {
+        window.removeEventListener("keydown", swipe);
+      };
+    }
   });
 
   return (
     <div className="app">
-      {/* {console.log('return:')} */}
       <Header score={score} bestScore={bestScore} init={init} />
       <GameOver className="gameover" gameover={gameover} score={score} />
       <main className="grid">
