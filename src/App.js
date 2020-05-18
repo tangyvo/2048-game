@@ -10,6 +10,8 @@ function App() {
   const [newTile, setNewtile] = useState(0);
   const [gameover, setGameover] = useState(false);
   const [tileToggle, settileToggle] = useState(false);
+  const [newTileId, setNewTileId] = useState();
+  const [prevGrid, setPrevGrid] = useState([]);
   const [grid, setGrid] = useState([
     [0, 0, 0, 0],
     [0, 0, 0, 0],
@@ -23,26 +25,33 @@ function App() {
     randTile();
   }, []);
 
+  // 
   useEffect(() => {
     const gridCopy = [...grid];
     let empty = false;
     let count = 0;
     while (!empty) {
       count += 1;
-      console.log("loop", count);
       let row = Math.floor(Math.random() * 4);
       let col = Math.floor(Math.random() * 4);
       if (gridCopy[row][col] === 0) {
         gridCopy[row][col] = newTile;
-        console.log(newTile);
+        getTileId(row, col);
         empty = true;
         calcTotal();
+
       } else if (count > 50) {
         empty = true;
       }
     }
     setGrid(gridCopy);
   }, [tileToggle]);
+
+  // convert tile postion on grid
+  const getTileId = (r, c) => {
+    let pos = r * 4 + c;
+    setNewTileId(pos);
+  };
 
   // resetting game and grid
   const init = () => {
@@ -82,7 +91,7 @@ function App() {
     setScore(total);
   };
 
-  const shiftUp = () => {
+  const moveUp = () => {
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
       let column = [0, 1, 2, 3].map((num) => gridCopy[num][col]);
@@ -95,7 +104,7 @@ function App() {
     setGrid(gridCopy);
   };
 
-  const shiftDown = () => {
+  const moveDown = () => {
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
       let column = [3, 2, 1, 0].map((num) => gridCopy[num][col]);
@@ -108,7 +117,7 @@ function App() {
     setGrid(gridCopy);
   };
 
-  const shiftRight = () => {
+  const moveRight = () => {
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
       let tile = gridCopy[row].filter((num) => num > 0);
@@ -120,7 +129,7 @@ function App() {
     setGrid(gridCopy);
   };
 
-  const shiftLeft = () => {
+  const moveLeft = () => {
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
       let tile = gridCopy[row].filter((num) => num > 0);
@@ -132,15 +141,15 @@ function App() {
     setGrid(gridCopy);
   };
 
-  const swipe = (e) => {
+  const swipe = (e) => {    
     if (e.key === "ArrowUp") {
-      shiftUp();
+      moveUp();
     } else if (e.key === "ArrowDown") {
-      shiftDown();
+      moveDown();
     } else if (e.key === "ArrowLeft") {
-      shiftLeft();
+      moveLeft();
     } else if (e.key === "ArrowRight") {
-      shiftRight();
+      moveRight();
     } else {
       return;
     }
@@ -148,17 +157,18 @@ function App() {
     calcTotal();
   };
 
+
   // check if game is over every time grid updates
   useEffect(() => {
     checkGameOver();
   }, [grid]);
 
   const checkGameOver = () => {
+    // check tiles are filled
     let empty = 0;
     for (let row of grid) {
       empty += row.filter((col) => col !== 0).length;
     }
-
     if (empty !== 16) return;
 
     let noMatch = true;
@@ -201,6 +211,7 @@ function App() {
 
   useEffect(() => {
     if (!gameover) {
+
       window.addEventListener("keydown", swipe);
       return () => {
         window.removeEventListener("keydown", swipe);
@@ -212,7 +223,7 @@ function App() {
     <div className="app">
       <Header score={score} bestScore={bestScore} init={init} />
       <GameOver className="gameover" gameover={gameover} score={score} />
-      <Grid grid={grid} />
+      <Grid grid={grid} id={newTileId} />
     </div>
   );
 }
