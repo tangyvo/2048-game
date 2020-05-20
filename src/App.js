@@ -11,7 +11,6 @@ function App() {
   const [gameover, setGameover] = useState(false);
   const [tileToggle, settileToggle] = useState(false);
   const [newTileId, setNewTileId] = useState();
-  const [prevGrid, setPrevGrid] = useState([]);
   const [grid, setGrid] = useState([
     [0, 0, 0, 0],
     [0, 0, 0, 0],
@@ -19,19 +18,19 @@ function App() {
     [0, 0, 0, 0],
   ]);
 
-  // get best score on page load
+  // PAGE LOAD - GET BESTSCORE AND FIRST TILE
   useEffect(() => {
     setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
     randTile();
   }, []);
 
-  // 
+  // ADD NEW TILE
   useEffect(() => {
     const gridCopy = [...grid];
     let empty = false;
-    let count = 0;
+
+    // KEEP LOOPING UNTIL EMPTY BLOCK FOUND
     while (!empty) {
-      count += 1;
       let row = Math.floor(Math.random() * 4);
       let col = Math.floor(Math.random() * 4);
       if (gridCopy[row][col] === 0) {
@@ -39,21 +38,18 @@ function App() {
         getTileId(row, col);
         empty = true;
         calcTotal();
-
-      } else if (count > 50) {
-        empty = true;
       }
     }
     setGrid(gridCopy);
   }, [tileToggle]);
 
-  // convert tile postion on grid
+  // GET POSITION ON GRID E.G. ROW 1, COL 1 = POSITION 5
   const getTileId = (r, c) => {
     let pos = r * 4 + c;
     setNewTileId(pos);
   };
 
-  // resetting game and grid
+  // RESET GRID ARRAY, CURRENT SCORE AND RESET GAMEOVER STATE
   const init = () => {
     setGrid([
       [0, 0, 0, 0],
@@ -66,7 +62,7 @@ function App() {
     setGameover(false);
   };
 
-  // check & save best score
+  // FN TO CHECK IF SCORE IS A BEST SCORE AND SAVE TO LOCAL STORAGE
   const saveBestScore = () => {
     if (score > bestScore) {
       localStorage.setItem(LOCALSTORAGE_KEY, score);
@@ -74,7 +70,7 @@ function App() {
     }
   };
 
-  // return either a 2 or 4
+  // GENERATE NEW RANDOM 2 OR 4 TILE
   const randTile = () => {
     settileToggle((prev) => (prev === true ? false : true));
     const num = [2, 4];
@@ -82,7 +78,7 @@ function App() {
     setNewtile(num[randIndex]);
   };
 
-  // count points on grid
+  // COUNT TOTAL POINTS ON GRID
   const calcTotal = () => {
     let total = 0;
     grid.map(
@@ -91,6 +87,7 @@ function App() {
     setScore(total);
   };
 
+  // CALCULATE NEW GRID POSITIONS WHEN 'UP' KEY PRESSED
   const moveUp = () => {
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
@@ -104,6 +101,7 @@ function App() {
     setGrid(gridCopy);
   };
 
+  // CALCULATE NEW GRID POSITIONS WHEN 'DOWN' KEY PRESSED
   const moveDown = () => {
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
@@ -117,6 +115,7 @@ function App() {
     setGrid(gridCopy);
   };
 
+  // CALCULATE NEW GRID POSITIONS WHEN 'RIGHT' KEY PRESSED
   const moveRight = () => {
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
@@ -129,6 +128,7 @@ function App() {
     setGrid(gridCopy);
   };
 
+  // CALCULATE NEW GRID POSITIONS WHEN 'LEFT' KEY PRESSED
   const moveLeft = () => {
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
@@ -141,7 +141,10 @@ function App() {
     setGrid(gridCopy);
   };
 
-  const swipe = (e) => {    
+  // CALL FN DEPENDING ON KEY PRESSED
+  const swipe = (e) => {
+    // DEEP COPY 
+    const prev = JSON.parse(JSON.stringify([...grid]));
     if (e.key === "ArrowUp") {
       moveUp();
     } else if (e.key === "ArrowDown") {
@@ -153,24 +156,38 @@ function App() {
     } else {
       return;
     }
-    randTile();
-    calcTotal();
+    // COMPARE PREVIOUS GRID STATE TO CURRENT TO SEE IF THERE WAS A CHANGE
+    let change = false;
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (prev[i][j] !== grid[i][j]) {
+          change = true;
+        }
+      }
+    }
+
+    // ONLY RENDER NEW TILE CALCULATE TOTAL FN IF GRID CHANGED 
+    if (change) {
+      randTile();
+      calcTotal();
+    }
   };
 
-
-  // check if game is over every time grid updates
+  // CHECK IF GAME IS OVER EVERY TIME GRID IS UPDATED
   useEffect(() => {
     checkGameOver();
   }, [grid]);
 
+  // FN TO CHECK IF GAME IS OVER
   const checkGameOver = () => {
-    // check tiles are filled
+    // CHECK NO TILES ARE EMPTY
     let empty = 0;
     for (let row of grid) {
       empty += row.filter((col) => col !== 0).length;
     }
     if (empty !== 16) return;
 
+    // SET noMatch TO FALSE IF TILE IS THE SAME AS THE ONE NEXT TO IT (THEREFORE GAME IS NOT OVER)
     let noMatch = true;
     for (let row = 0; row <= 3; row++) {
       for (let col = 0; col <= 3; col++) {
@@ -191,13 +208,14 @@ function App() {
       }
     }
 
+    // SET GAMEOVER AND CHECK BEST SCORE ONLY IF THERE ARE NO MATCHES FOUND ON GRID
     if (noMatch) {
       setGameover(true);
       saveBestScore();
     }
   };
 
-  // merge 2 tiles of the same number
+  // MERGE 2 TILES BY DOUBLING AND THEN REMOVING 2ND FILE FROM ARRAY
   const checkMerge = (array) => {
     let newArray = [...array];
     for (let i = 0; i < array.length - 1; i++) {
@@ -209,9 +227,9 @@ function App() {
     return newArray;
   };
 
+  // ADD AND REMOVE EVENT LISTENERS
   useEffect(() => {
     if (!gameover) {
-
       window.addEventListener("keydown", swipe);
       return () => {
         window.removeEventListener("keydown", swipe);
