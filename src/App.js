@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from "react";
-import GameOver from "./component/Gameover";
-import Header from "./component/Header";
-import Grid from "./component/Grid";
+import React, { useState, useEffect } from 'react';
+import {
+  BrowserView,
+  MobileView,
+  isBrowser,
+  isMobile,
+} from 'react-device-detect';
+import GameOver from './component/Gameover';
+import Header from './component/Header';
+import Instructions from './component/Instructions';
+import Grid from './component/Grid';
 
 function App() {
-  const LOCALSTORAGE_KEY = "2048-best-score";
+  const LOCALSTORAGE_KEY = '2048-best-score';
   const [bestScore, setBestScore] = useState(0);
   const [score, setScore] = useState(0);
   const [newTile, setNewtile] = useState(0);
@@ -17,6 +24,9 @@ function App() {
     [0, 0, 0, 0],
     [0, 0, 0, 0],
   ]);
+  const [touchStart, setTouchStart] = useState([0, 0]);
+  const [touchMove, setTouchMove] = useState([0, 0]);
+  const [touchEnd, setTouchEnd] = useState(false);
 
   // PAGE LOAD - GET BESTSCORE AND FIRST TILE
   useEffect(() => {
@@ -143,15 +153,18 @@ function App() {
 
   // CALL FN DEPENDING ON KEY PRESSED
   const swipe = (e) => {
-    // DEEP COPY 
+    if (isBrowser) {
+      e = e.key;
+    }
+    // DEEP COPY
     const prev = JSON.parse(JSON.stringify([...grid]));
-    if (e.key === "ArrowUp") {
+    if (e === 'ArrowUp') {
       moveUp();
-    } else if (e.key === "ArrowDown") {
+    } else if (e === 'ArrowDown') {
       moveDown();
-    } else if (e.key === "ArrowLeft") {
+    } else if (e === 'ArrowLeft') {
       moveLeft();
-    } else if (e.key === "ArrowRight") {
+    } else if (e === 'ArrowRight') {
       moveRight();
     } else {
       return;
@@ -166,12 +179,16 @@ function App() {
       }
     }
 
-    // ONLY RENDER NEW TILE CALCULATE TOTAL FN IF GRID CHANGED 
+    // ONLY RENDER NEW TILE CALCULATE TOTAL FN IF GRID CHANGED
     if (change) {
       randTile();
       calcTotal();
     }
   };
+
+  const gridChangeCheck = () => {
+    
+  }
 
   // CHECK IF GAME IS OVER EVERY TIME GRID IS UPDATED
   useEffect(() => {
@@ -230,17 +247,61 @@ function App() {
   // ADD AND REMOVE EVENT LISTENERS
   useEffect(() => {
     if (!gameover) {
-      window.addEventListener("keydown", swipe);
+      window.addEventListener('keydown', swipe);
       return () => {
-        window.removeEventListener("keydown", swipe);
+        window.removeEventListener('keydown', swipe);
       };
     }
   });
 
+  // MOBILE SWIPE
+  useEffect(() => {
+    if (!touchEnd) return;
+    let changeX = touchStart[0] - touchMove[0];
+    let changeY = touchStart[1] - touchMove[1];
+    let absChangeX = Math.abs(changeX);
+    let absChangeY = Math.abs(changeY);
+
+    // Left / Right Swipe
+    if (absChangeX > absChangeY) {
+      if (changeX > 0) {
+        swipe('ArrowLeft');
+      } else {
+        swipe('ArrowRight');
+      }
+    }
+    // Top / Down Swipe
+    else if (absChangeX < absChangeY) {
+        if (changeY > 0) {
+          swipe('ArrowUp');
+        }
+        else {
+          swipe('ArrowDown');
+        }
+    }
+    setTouchEnd(false);
+  }, [touchEnd]);
+
+  const touchType = (e) => {
+    if (e.type === 'touchstart') {
+      setTouchStart([e.touches[0].clientX, e.touches[0].clientY]);
+    } else if (e.type === 'touchmove') {
+      setTouchMove([e.touches[0].clientX, e.touches[0].clientY]);
+    } else if (e.type === 'touchend') {
+      setTouchEnd(true);
+    }
+  };
+
   return (
-    <div className="app">
+    <div
+      className='app'
+      onTouchStart={(e) => touchType(e)}
+      onTouchMove={(e) => touchType(e)}
+      onTouchEnd={(e) => touchType(e)}
+    >
       <Header score={score} bestScore={bestScore} init={init} />
-      <GameOver className="gameover" gameover={gameover} score={score} />
+      <Instructions />
+      <GameOver className='gameover' gameover={gameover} score={score} />
       <Grid grid={grid} id={newTileId} />
     </div>
   );

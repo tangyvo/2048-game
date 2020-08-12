@@ -1,8 +1,9 @@
 import React from "react";
 
+
 const Header = ({ score, bestScore, init }) => {
   return (
-    <React.Fragment>
+    <>
       <header>
         <div className="logo">
           <p>2048</p>
@@ -22,12 +23,8 @@ const Header = ({ score, bestScore, init }) => {
         </div>
       </header>
 
-      <div className="instructions">
-        <strong>How to play: </strong>Press the up, down, right or left arrow
-        keys to move the tiles. When 2 same tiles touch they merge into one.
-        Reach 2048 to win.
-      </div>
-    </React.Fragment>
+
+    </>
   );
 };
 
