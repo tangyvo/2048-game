@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  BrowserView,
-  MobileView,
-  isBrowser,
-  isMobile,
-} from 'react-device-detect';
+import { isBrowser } from 'react-device-detect';
 import GameOver from './component/Gameover';
 import Header from './component/Header';
 import Instructions from './component/Instructions';
@@ -16,30 +11,43 @@ function App() {
   const [score, setScore] = useState(0);
   const [newTile, setNewtile] = useState(0);
   const [gameover, setGameover] = useState(false);
-  const [tileToggle, settileToggle] = useState(false);
+  const [tileToggle, setTileToggle] = useState(false);
   const [newTileId, setNewTileId] = useState();
+  const [touchStart, setTouchStart] = useState([0, 0]);
+  const [touchMove, setTouchMove] = useState([0, 0]);
+  const [touchEnd, setTouchEnd] = useState(false);
   const [grid, setGrid] = useState([
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
   ]);
-  const [touchStart, setTouchStart] = useState([0, 0]);
-  const [touchMove, setTouchMove] = useState([0, 0]);
-  const [touchEnd, setTouchEnd] = useState(false);
 
-  // PAGE LOAD - GET BESTSCORE AND FIRST TILE
   useEffect(() => {
-    setBestScore(localStorage.getItem(LOCALSTORAGE_KEY));
+    // get best score if there is one, else set to 0.
+    let bestScore = localStorage.getItem(LOCALSTORAGE_KEY)
+      ? localStorage.getItem(LOCALSTORAGE_KEY)
+      : 0;
+    setBestScore(bestScore);
+
     randTile();
   }, []);
 
-  // ADD NEW TILE
+  const randTile = () => {
+    // generate random 2/4 tile.
+    const num = [2, 4];
+    const randIndex = Math.round(Math.random());
+    setNewtile(num[randIndex]);
+
+    // used to track a new tile was generated even if its the same as the prev
+    setTileToggle((prev) => (prev === true ? false : true));
+  };
+
   useEffect(() => {
     const gridCopy = [...grid];
     let empty = false;
 
-    // KEEP LOOPING UNTIL EMPTY BLOCK FOUND
+    // generate rand grid pos (x,y) if its empty insert new tile
     while (!empty) {
       let row = Math.floor(Math.random() * 4);
       let col = Math.floor(Math.random() * 4);
@@ -47,19 +55,19 @@ function App() {
         gridCopy[row][col] = newTile;
         getTileId(row, col);
         empty = true;
-        calcTotal();
+        calcTotalScore();
       }
     }
     setGrid(gridCopy);
   }, [tileToggle]);
 
-  // GET POSITION ON GRID E.G. ROW 1, COL 1 = POSITION 5
+  // set new tile + convert from (x,y) to ID
   const getTileId = (r, c) => {
     let pos = r * 4 + c;
     setNewTileId(pos);
   };
 
-  // RESET GRID ARRAY, CURRENT SCORE AND RESET GAMEOVER STATE
+  // reset everything
   const init = () => {
     setGrid([
       [0, 0, 0, 0],
@@ -72,7 +80,7 @@ function App() {
     setGameover(false);
   };
 
-  // FN TO CHECK IF SCORE IS A BEST SCORE AND SAVE TO LOCAL STORAGE
+  // if current score is best score save to local storage
   const saveBestScore = () => {
     if (score > bestScore) {
       localStorage.setItem(LOCALSTORAGE_KEY, score);
@@ -80,16 +88,8 @@ function App() {
     }
   };
 
-  // GENERATE NEW RANDOM 2 OR 4 TILE
-  const randTile = () => {
-    settileToggle((prev) => (prev === true ? false : true));
-    const num = [2, 4];
-    const randIndex = Math.round(Math.random());
-    setNewtile(num[randIndex]);
-  };
-
-  // COUNT TOTAL POINTS ON GRID
-  const calcTotal = () => {
+  // count total points on grid
+  const calcTotalScore = () => {
     let total = 0;
     grid.map(
       (row) => (total += row.reduce((prev, cur) => prev + Number(cur), 0))
@@ -97,7 +97,7 @@ function App() {
     setScore(total);
   };
 
-  // CALCULATE NEW GRID POSITIONS WHEN 'UP' KEY PRESSED
+  // set new grid when swipe UP
   const moveUp = () => {
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
@@ -111,7 +111,7 @@ function App() {
     setGrid(gridCopy);
   };
 
-  // CALCULATE NEW GRID POSITIONS WHEN 'DOWN' KEY PRESSED
+  // set new grid when swipe DOWN
   const moveDown = () => {
     let gridCopy = [...grid];
     for (let col = 0; col < 4; col++) {
@@ -125,7 +125,7 @@ function App() {
     setGrid(gridCopy);
   };
 
-  // CALCULATE NEW GRID POSITIONS WHEN 'RIGHT' KEY PRESSED
+  // set new grid when swipe RIGHT
   const moveRight = () => {
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
@@ -138,7 +138,7 @@ function App() {
     setGrid(gridCopy);
   };
 
-  // CALCULATE NEW GRID POSITIONS WHEN 'LEFT' KEY PRESSED
+  // set new grid when swipe LEFT
   const moveLeft = () => {
     let gridCopy = [...grid];
     for (let row = 0; row < 4; row++) {
@@ -151,13 +151,15 @@ function App() {
     setGrid(gridCopy);
   };
 
-  // CALL FN DEPENDING ON KEY PRESSED
+  // call when keypress/mobile swipe
   const swipe = (e) => {
     if (isBrowser) {
       e = e.key;
     }
-    // DEEP COPY
+
+    // make deep copy of prev grid state
     const prev = JSON.parse(JSON.stringify([...grid]));
+
     if (e === 'ArrowUp') {
       moveUp();
     } else if (e === 'ArrowDown') {
@@ -169,7 +171,8 @@ function App() {
     } else {
       return;
     }
-    // COMPARE PREVIOUS GRID STATE TO CURRENT TO SEE IF THERE WAS A CHANGE
+
+    // check if grid changed after keypress/swipe
     let change = false;
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
@@ -179,32 +182,23 @@ function App() {
       }
     }
 
-    // ONLY RENDER NEW TILE CALCULATE TOTAL FN IF GRID CHANGED
+    // if grid change then add new tile, calc score and check if gameover
     if (change) {
       randTile();
-      calcTotal();
+      calcTotalScore();
+      checkGameOver();
     }
   };
 
-  const gridChangeCheck = () => {
-    
-  }
-
-  // CHECK IF GAME IS OVER EVERY TIME GRID IS UPDATED
-  useEffect(() => {
-    checkGameOver();
-  }, [grid]);
-
-  // FN TO CHECK IF GAME IS OVER
   const checkGameOver = () => {
-    // CHECK NO TILES ARE EMPTY
+    // check no tiles are empty
     let empty = 0;
     for (let row of grid) {
       empty += row.filter((col) => col !== 0).length;
     }
     if (empty !== 16) return;
 
-    // SET noMatch TO FALSE IF TILE IS THE SAME AS THE ONE NEXT TO IT (THEREFORE GAME IS NOT OVER)
+    // check if there are any touching tiles with same number
     let noMatch = true;
     for (let row = 0; row <= 3; row++) {
       for (let col = 0; col <= 3; col++) {
@@ -225,18 +219,19 @@ function App() {
       }
     }
 
-    // SET GAMEOVER AND CHECK BEST SCORE ONLY IF THERE ARE NO MATCHES FOUND ON GRID
+    // gameover and store best score
     if (noMatch) {
       setGameover(true);
       saveBestScore();
     }
   };
 
-  // MERGE 2 TILES BY DOUBLING AND THEN REMOVING 2ND FILE FROM ARRAY
   const checkMerge = (array) => {
     let newArray = [...array];
     for (let i = 0; i < array.length - 1; i++) {
+      // check if array contains same tile next to each other
       if (newArray[i] === newArray[i + 1]) {
+        // if so, double tile and remove from 1 from array
         newArray[i] = array[i] * 2;
         newArray.splice(i + 1, 1);
       }
@@ -244,7 +239,7 @@ function App() {
     return newArray;
   };
 
-  // ADD AND REMOVE EVENT LISTENERS
+  // add and remove event listeners
   useEffect(() => {
     if (!gameover) {
       window.addEventListener('keydown', swipe);
@@ -254,15 +249,16 @@ function App() {
     }
   });
 
-  // MOBILE SWIPE
+  // called when mobile swipe detected
   useEffect(() => {
     if (!touchEnd) return;
+    // compare touchstart and touchend to determine up, down, left or right swipe
     let changeX = touchStart[0] - touchMove[0];
     let changeY = touchStart[1] - touchMove[1];
     let absChangeX = Math.abs(changeX);
     let absChangeY = Math.abs(changeY);
 
-    // Left / Right Swipe
+    // left/right swipe
     if (absChangeX > absChangeY) {
       if (changeX > 0) {
         swipe('ArrowLeft');
@@ -270,14 +266,13 @@ function App() {
         swipe('ArrowRight');
       }
     }
-    // Top / Down Swipe
+    // up/down swipe
     else if (absChangeX < absChangeY) {
-        if (changeY > 0) {
-          swipe('ArrowUp');
-        }
-        else {
-          swipe('ArrowDown');
-        }
+      if (changeY > 0) {
+        swipe('ArrowUp');
+      } else {
+        swipe('ArrowDown');
+      }
     }
     setTouchEnd(false);
   }, [touchEnd]);

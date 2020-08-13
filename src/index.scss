@@ -46,20 +46,19 @@ code {
 
 .app {
   max-width: 400px;
-  height: 700px;
-  border: 1px solid rgb(198, 198, 198);
-  border-radius: $b-radius;
+  height: 650px;
+  max-height: 100vh;
   padding: 15px;
 }
 
 header {
-  margin-top: 40px;
+  margin-top: 20px;
   display: flex;
 
   .logo {
     background-color: $logo;
-    height: 120px;
-    width: 120px;
+    height: 130px;
+    width: 150px;
     border-radius: $b-radius;
 
     p {
@@ -67,8 +66,7 @@ header {
       font-weight: 800;
       color: white;
       text-align: center;
-      line-height: 120px;
-
+      line-height: 130px;
     }
   }
 
@@ -76,7 +74,7 @@ header {
     margin-left: 10px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    width: 200px;
+    width: 250px;
 
     .score,
     .best {
@@ -119,6 +117,7 @@ header {
       outline: none;
       border: none;
       height: 50px;
+      margin-right: 5px;
       cursor: pointer;
 
       &:hover {
@@ -232,8 +231,8 @@ main {
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
   z-index: 1;
-  height: 350px;
-  width: 350px;
+  height: 370px;
+  width: 370px;
   display: flex;
   flex-direction: column;
   justify-content: center;
